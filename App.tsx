@@ -61,6 +61,7 @@ function fileToBase64(file: File): Promise<ImageObject> {
 
 function App() {
     const [state, setState] = useState<AppState>(initialState);
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
     const getYouTubeThumbnail = async (videoId: string): Promise<ImageObject> => {
         const potentialUrls = [
@@ -135,8 +136,13 @@ function App() {
     const parseErrorMessage = (error: any): string | null => {
         if (!(error instanceof Error)) return null;
 
+        if (error.message.includes("API Key belum diatur")) {
+            return error.message;
+        }
+
         try {
             // Gemini API errors are often JSON strings inside the message property
+            // This may not be standard, so we wrap in try-catch
             const errorJson = JSON.parse(error.message);
             const details = errorJson.error;
 
@@ -144,9 +150,8 @@ function App() {
                 if (details.status === 'UNAVAILABLE' || details.code === 503) {
                     return 'Model AI lagi sibuk banget. Coba beberapa saat lagi atau ganti model lain, ya.';
                 }
-                // A more user-friendly message for invalid API key
                 if (details.message.includes("API key not valid")) {
-                    return 'API Key kamu sepertinya salah. Cek lagi ya.';
+                    return 'API Key kamu sepertinya salah. Cek lagi di Pengaturan API Key.';
                 }
                  // For billing errors
                 if (details.message.includes("billed users")) {
@@ -360,6 +365,7 @@ function App() {
                         onRemoveCharacter={handleRemoveCharacter}
                         onUndo={handleUndo}
                         onReset={handleReset}
+                        onOpenSettings={() => setIsSettingsModalOpen(true)}
                         undoDisabled={state.imageHistory.length <= 1 || state.isLoading}
                         isLoading={state.isLoading}
                         hasBaseImage={!!state.baseImage}
@@ -383,7 +389,7 @@ function App() {
                     />
                 </div>
             </main>
-            <SettingsModal isOpen={false} onClose={() => {}} />
+            <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
         </div>
     );
 }

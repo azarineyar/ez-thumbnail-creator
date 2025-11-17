@@ -7,6 +7,7 @@ import { EditIcon } from './icons/EditIcon';
 import { UploadIcon } from './icons/UploadIcon';
 import { UndoIcon } from './icons/UndoIcon';
 import { RestartIcon } from './icons/RestartIcon';
+import { SettingsIcon } from './icons/SettingsIcon';
 
 
 interface ControlPanelProps {
@@ -30,6 +31,7 @@ interface ControlPanelProps {
     onRemoveCharacter: (index: number) => void;
     onUndo: () => void;
     onReset: () => void;
+    onOpenSettings: () => void;
     undoDisabled: boolean;
     isLoading: boolean;
     hasBaseImage: boolean;
@@ -172,7 +174,7 @@ const TextEditorPanel: React.FC<Pick<ControlPanelProps, 'textLayers' | 'activeTe
 const ImageControlPanel: React.FC<ControlPanelProps> = (props) => {
     const { url, prompt, promptHistory, appMode, generationModel, characterReferences,
         setUrl, setPrompt, setAppMode, setGenerationModel, onFetch, onRecreateThumbnail, onGenerate, onOverlayUpload, onRemoveOverlay, onCharacterUpload, onRemoveCharacter,
-        isLoading, hasBaseImage, hasOverlay, onUndo, onReset, undoDisabled
+        isLoading, hasBaseImage, hasOverlay, onUndo, onReset, undoDisabled, onOpenSettings
     } = props;
     
     const [historyIndex, setHistoryIndex] = useState(-1);
@@ -345,6 +347,12 @@ const ImageControlPanel: React.FC<ControlPanelProps> = (props) => {
                         disabled={isLoading}
                     >
                         <RestartIcon className="w-5 h-5"/> <span className="sm:inline">Reset</span>
+                    </button>
+                    <button 
+                        onClick={onOpenSettings} 
+                        className="bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-2 text-sm"
+                    >
+                        <SettingsIcon className="w-5 h-5"/> <span className="sm:inline">API Key</span>
                     </button>
                 </div>
             </div>

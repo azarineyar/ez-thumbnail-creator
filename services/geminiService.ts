@@ -1,9 +1,14 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { ImageObject, GenerationModel } from "../types";
+import { getApiKey } from "../utils/apiKeyManager";
 
-// Initialize the GoogleGenAI client once as per guidelines.
-// The API key is expected to be in process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+function getGenAIClient() {
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        throw new Error("API Key belum diatur. Silakan atur di Pengaturan API Key.");
+    }
+    return new GoogleGenAI({ apiKey });
+}
 
 function getModelName(model: GenerationModel): string {
     switch (model) {
@@ -12,8 +17,10 @@ function getModelName(model: GenerationModel): string {
         case 'imagen4':
             return 'imagen-4.0-generate-001';
         case 'imagen4ultra':
+            // This model is not in the provided guidelines, but we'll assume it's a valid custom model.
             return 'imagen-4.0-ultra-generate-001';
         case 'imagen4fast':
+            // This model is not in the provided guidelines, but we'll assume it's a valid custom model.
             return 'imagen-4.0-fast-generate-001';
     }
 }
@@ -31,6 +38,7 @@ function processPromptWithReferences(prompt: string, refCount: number): string {
 }
 
 async function generateWithMultimodalPrompt(prompt: string, model: GenerationModel, characterReferences: ImageObject[] = []): Promise<ImageObject> {
+    const ai = getGenAIClient();
     const modelName = getModelName(model);
     const parts: any[] = [];
 
@@ -49,7 +57,8 @@ async function generateWithMultimodalPrompt(prompt: string, model: GenerationMod
             contents: { parts },
             config: {
                 responseModalities: [Modality.IMAGE],
-                imageConfig: { aspectRatio: '16:9' }
+                // FIX: Per guidelines, imageConfig is not a supported parameter for gemini-2.5-flash-image with generateContent.
+                // imageConfig: { aspectRatio: '16:9' }
             }
         });
 
@@ -86,6 +95,7 @@ export async function generateImageFromPrompt(prompt: string, model: GenerationM
 
 
 export async function editImageWithPrompt(baseImage: ImageObject, prompt: string, model: GenerationModel, characterReferences: ImageObject[] = []): Promise<ImageObject> {
+     const ai = getGenAIClient();
      if (model === 'gemini') {
         const parts: any[] = [];
         // Add the base image to be edited
@@ -105,7 +115,8 @@ export async function editImageWithPrompt(baseImage: ImageObject, prompt: string
             contents: { parts },
             config: {
                 responseModalities: [Modality.IMAGE],
-                imageConfig: { aspectRatio: '16:9' }
+                // FIX: Per guidelines, other configs are not supported for image editing with this model.
+                // imageConfig: { aspectRatio: '16:9' }
             },
         });
 
@@ -137,6 +148,7 @@ export async function editImageWithPrompt(baseImage: ImageObject, prompt: string
 }
 
 export async function copyImageStyle(baseImage: ImageObject, model: GenerationModel): Promise<ImageObject> {
+    const ai = getGenAIClient();
     const analysisPrompt = `**Act As:** A highly skilled visual analyst and AI image generation prompt engineer. Your expertise is in deconstructing visual content into its core artistic components and translating them into precise, effective prompts for image generation AI models.
 
 **Task:** Meticulously analyze the provided thumbnail image. Your goal is to generate a single, comprehensive, and highly detailed prompt string that an AI image generator can use to recreate a very similar image with high fidelity, **but completely free of any text or numbers.**
@@ -179,9 +191,10 @@ Analyze the provided image based on all these criteria (ignoring text as per the
             contents: { parts: [{ text: generationPrompt }] },
             config: {
                 responseModalities: [Modality.IMAGE],
-                imageConfig: {
-                    aspectRatio: '16:9'
-                }
+                // FIX: Per guidelines, imageConfig is not a supported parameter for gemini-2.5-flash-image with generateContent.
+                // imageConfig: {
+                //     aspectRatio: '16:9'
+                // }
             }
         });
 
